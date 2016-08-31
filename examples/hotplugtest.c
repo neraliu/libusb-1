@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 	int product_id, vendor_id, class_id;
 	int rc;
 
-	vendor_id  = (argc > 1) ? (int)strtol (argv[1], NULL, 0) : 0x045a;
-	product_id = (argc > 2) ? (int)strtol (argv[2], NULL, 0) : 0x5005;
+	vendor_id  = (argc > 1) ? (int)strtol (argv[1], NULL, 0) : LIBUSB_HOTPLUG_MATCH_ANY;
+	product_id = (argc > 2) ? (int)strtol (argv[2], NULL, 0) : LIBUSB_HOTPLUG_MATCH_ANY;
 	class_id   = (argc > 3) ? (int)strtol (argv[3], NULL, 0) : LIBUSB_HOTPLUG_MATCH_ANY;
 
 	rc = libusb_init (NULL);
@@ -120,3 +120,7 @@ int main(int argc, char *argv[])
 
 	return EXIT_SUCCESS;
 }
+
+/*
+* http://www.linux-usb.org/usb.ids
+*/

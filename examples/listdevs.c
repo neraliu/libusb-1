@@ -18,24 +18,41 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "libusb.h"
+
+#define LIBUSB_MAXSTR 1024
 
 static void print_devs(libusb_device **devs)
 {
 	libusb_device *dev;
-	int i = 0, j = 0;
+	int i = 0, j = 0, err = 0;
 	uint8_t path[8]; 
+	unsigned char* str = calloc(LIBUSB_MAXSTR, sizeof(unsigned char));
 
 	while ((dev = devs[i++]) != NULL) {
+		libusb_device_handle *handle;
 		struct libusb_device_descriptor desc;
+
 		int r = libusb_get_device_descriptor(dev, &desc);
 		if (r < 0) {
 			fprintf(stderr, "failed to get device descriptor");
 			return;
 		}
 
-		printf("%04x:%04x (bus %d, device %d)",
+		err = libusb_open(dev, &handle);
+		if (!err) {
+			libusb_get_string_descriptor_ascii(handle, desc.iManufacturer, str, LIBUSB_MAXSTR);
+			printf("iManufacturer %s\n", str);
+			libusb_get_string_descriptor_ascii(handle, desc.iProduct, str, LIBUSB_MAXSTR);
+			printf("iProduct %s\n", str);
+			libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, str, LIBUSB_MAXSTR);
+			printf("iSerialNumber %s\n", str);
+			libusb_close(handle);
+		}
+
+		printf("idVendor %04x: iProduct %04x (bus %d, device %d)",
 			desc.idVendor, desc.idProduct,
 			libusb_get_bus_number(dev), libusb_get_device_address(dev));
 
@@ -47,6 +64,8 @@ static void print_devs(libusb_device **devs)
 		}
 		printf("\n");
 	}
+
+	free(str);
 }
 
 int main(void)
@@ -69,3 +88,7 @@ int main(void)
 	libusb_exit(NULL);
 	return 0;
 }
+
+/*
+Reference: http://libusb.sourceforge.net/api-1.0/structlibusb__device__descriptor.html
+*/
